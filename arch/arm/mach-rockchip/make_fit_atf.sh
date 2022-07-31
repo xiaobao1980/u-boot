@@ -76,7 +76,7 @@ function generate_kfdt_node()
 function generate_bl31_node()
 {
 	NUM=1
-	for NAME in `ls -l bl31_0x*.bin | sort --key=5 -nr | awk '{ print $9 }'`
+	for NAME in `ls -l bl31_0x*.bin | sort --key=5 -nr | awk '{ print $10 }'`
 	do
 		ATF_LOAD_ADDR=`echo ${NAME} | awk -F "_" '{ printf $2 }' | awk -F "." '{ printf $1 }'`
 		# only atf-1 support compress
