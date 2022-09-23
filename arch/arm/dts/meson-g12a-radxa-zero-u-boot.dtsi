@@ -5,3 +5,8 @@
  */
 
 #include "meson-g12-common-u-boot.dtsi"
+/ {
+	config {
+		u-boot,boot-led = "radxa-zero:green";
+	};
+};
