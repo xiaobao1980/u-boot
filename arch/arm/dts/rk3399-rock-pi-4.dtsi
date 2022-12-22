@@ -421,38 +421,43 @@
 	};
 
 	vdd_cpu_b: regulator@40 {
+		u-boot,dm-spl;
 		compatible = "silergy,syr827";
 		reg = <0x40>;
 		fcs,suspend-voltage-selector = <1>;
-		pinctrl-names = "default";
+		regulator-compatible = "fan53555-reg";
 		pinctrl-0 = <&vsel1_pin>;
+		vsel-gpios = <&gpio1 RK_PC1 GPIO_ACTIVE_HIGH>;
 		regulator-name = "vdd_cpu_b";
 		regulator-min-microvolt = <712500>;
 		regulator-max-microvolt = <1500000>;
+		regulator-init-microvolt = <900000>;
 		regulator-ramp-delay = <1000>;
 		regulator-always-on;
 		regulator-boot-on;
 		vin-supply = <&vcc5v0_sys>;
-
 		regulator-state-mem {
 			regulator-off-in-suspend;
 		};
 	};
 
 	vdd_gpu: regulator@41 {
+		u-boot,dm-spl;
 		compatible = "silergy,syr828";
 		reg = <0x41>;
 		fcs,suspend-voltage-selector = <1>;
-		pinctrl-names = "default";
+		regulator-compatible = "fan53555-reg";
 		pinctrl-0 = <&vsel2_pin>;
+		vsel-gpios = <&gpio1 RK_PB6 GPIO_ACTIVE_HIGH>;
 		regulator-name = "vdd_gpu";
 		regulator-min-microvolt = <712500>;
 		regulator-max-microvolt = <1500000>;
+		regulator-init-microvolt = <900000>;
 		regulator-ramp-delay = <1000>;
 		regulator-always-on;
 		regulator-boot-on;
 		vin-supply = <&vcc5v0_sys>;
-
+		regulator-initial-mode = <1>; /* 1:force PWM 2:auto */
 		regulator-state-mem {
 			regulator-off-in-suspend;
 		};
