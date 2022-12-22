@@ -187,6 +187,7 @@ struct i2c_msg_list {
  * Return: 0 on success, -ve on failure
  */
 int dm_i2c_read(struct udevice *dev, uint offset, uint8_t *buffer, int len);
+int dm_i2c_addr_read(struct udevice *dev, uint i2c_addr, uint offset, uint8_t *buffer, int len);
 
 /**
  * dm_i2c_write() - write bytes to an I2C chip
@@ -201,6 +202,8 @@ int dm_i2c_read(struct udevice *dev, uint offset, uint8_t *buffer, int len);
  * Return: 0 on success, -ve on failure
  */
 int dm_i2c_write(struct udevice *dev, uint offset, const uint8_t *buffer,
+		 int len);
+int dm_i2c_addr_write(struct udevice *dev, uint i2c_addr, uint offset, const uint8_t *buffer,
 		 int len);
 
 /**
