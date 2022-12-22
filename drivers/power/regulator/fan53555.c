@@ -97,6 +97,14 @@ struct fan53555_priv {
 	unsigned int slew_rate;
 	/* Sleep voltage cache */
 	unsigned int sleep_vol_cache;
+
+	int rk860_type;
+};
+
+enum {
+	IS_RK860_0_ONLY = 1,
+	IS_RK860_1_ONLY,
+	IS_RK860_0_1,
 };
 
 static int fan53555_regulator_of_to_plat(struct udevice *dev)
@@ -198,6 +206,139 @@ enum {
 	DIE_REV_WIDTH = 4,
 };
 
+static void fan53555_rk860_calibration(struct udevice *dev, struct fan53555_priv *di)
+{
+	int ret;
+	uint8_t buffer0[3], buffer1[3];
+	uint8_t value, version0 = 0x04, version1 = 0x04;
+	uint8_t flag = 0;
+
+	di->rk860_type = 0;
+	ret = dm_i2c_addr_read(dev, 0x40, 0x0E, &value, 1);
+	if (ret < 0) {
+		printf("%s>>>>>>hardware do not have rk860-0\n", __func__);
+	} else {
+		if (value == 0x00 || value == 0x04) {
+			di->rk860_type = IS_RK860_0_ONLY;
+			version0 = value & 0x04;
+			printf("%s>>>>>>hardware have rk860-0, reg[0x0e] = 0x%x\n", __func__, value);
+		} else {
+			printf("%s>>>>>>hardware 0x40 i2c-dev is not rk860-0, maybe syr827/syr837, reg[0x0e] = 0x%x\n", __func__, value);
+			flag = 1;
+		}
+	}
+
+	ret = dm_i2c_addr_read(dev, 0x41, 0x0E, &value, 1);
+	if (ret < 0) {
+		printf("%s>>>>>>hardware do not have rk860-1\n", __func__);
+	} else {
+		if (value == 0x44 || value == 0x40) {
+			if (di->rk860_type)
+				di->rk860_type = IS_RK860_0_1;
+			else
+				di->rk860_type = IS_RK860_1_ONLY;
+
+			version1 = value & 0x04;
+			printf("%s>>>>>>hardware have rk860-1, reg[0x0e] = 0x%x\n", __func__, value);
+		} else {
+			printf("%s>>>>>>hardware 0x41 i2c-dev is not rk860-1, maybe syr828/syr838, reg[0x0e] = 0x%x\n", __func__, value);
+			flag = 2;
+		}
+	}
+
+	if (flag == 1 && di->rk860_type == IS_RK860_1_ONLY && version1 == 0) {
+		printf("%s>>>>>>warnning..., can not support this hardware mode\n", __func__);
+		return;
+	}
+
+	printf("%s>>>>>rk860_type = %d\n", __func__, di->rk860_type);
+
+	switch (di->rk860_type) {
+		case IS_RK860_0_ONLY:
+			if (version0 == 0) {
+				dm_i2c_addr_read(dev, 0x40, 0x0B, &buffer0[0], 1);
+				dm_i2c_addr_read(dev, 0x40, 0x0C, &buffer0[1], 1);
+				dm_i2c_addr_read(dev, 0x40, 0x0D, &buffer0[2], 1);
+				value=0x5a;
+				dm_i2c_addr_write(dev, 0x40, 0x0A, &value, 1);
+				value=0x04;
+				dm_i2c_addr_write(dev, 0x40, 0x0E, &value, 1);
+				dm_i2c_addr_write(dev, 0x40, 0x0B, &buffer0[0], 1);
+				dm_i2c_addr_write(dev, 0x40, 0x0C, &buffer0[1], 1);
+				dm_i2c_addr_write(dev, 0x40, 0x0D, &buffer0[2], 1);
+
+				printf("%s>>>>>> 0x0A = 0x%x,0x0B = 0x%x,0x0C = 0x%x,0x0D = 0x%x,0x0E = 0x%x\n",__func__, \
+						pmic_reg_read(dev->parent, 0x0A), \
+						pmic_reg_read(dev->parent, 0x0B), \
+						pmic_reg_read(dev->parent, 0x0C), \
+						pmic_reg_read(dev->parent, 0x0D), \
+						pmic_reg_read(dev->parent, 0x0E)  \
+						);
+				printf("%s>>>>>>rk860-0 calibration okay.\n", __func__);
+			}
+			break;
+
+		case IS_RK860_1_ONLY:
+			if (version1 == 0) {
+				dm_i2c_addr_read(dev, 0x41, 0x0B, &buffer1[0], 1);
+				dm_i2c_addr_read(dev, 0x41, 0x0C, &buffer1[1], 1);
+				dm_i2c_addr_read(dev, 0x41, 0x0D, &buffer1[2], 1);
+				value=0x5a;
+				dm_i2c_addr_write(dev, 0x41, 0x0A, &value, 1);
+				value=0x44;
+				dm_i2c_addr_write(dev, 0x40, 0x0E, &value, 1);
+				dm_i2c_addr_write(dev, 0x41, 0x0B, &buffer1[0], 1);
+				dm_i2c_addr_write(dev, 0x41, 0x0C, &buffer1[1], 1);
+				dm_i2c_addr_write(dev, 0x41, 0x0D, &buffer1[2], 1);
+
+				printf("%s>>>>>> 0x0A = 0x%x,0x0B = 0x%x,0x0C = 0x%x,0x0D = 0x%x,0x0E = 0x%x\n",__func__, \
+						pmic_reg_read(dev->parent, 0x0A), \
+						pmic_reg_read(dev->parent, 0x0B), \
+						pmic_reg_read(dev->parent, 0x0C), \
+						pmic_reg_read(dev->parent, 0x0D), \
+						pmic_reg_read(dev->parent, 0x0E)  \
+						);
+				printf("%s>>>>>>rk860-1 calibration okay.\n", __func__);
+			}
+			break;
+
+		case IS_RK860_0_1:
+			if (version0 == 0 || version1 == 0) {
+				dm_i2c_addr_read(dev, 0x40, 0x0B, &buffer0[0], 1);
+				dm_i2c_addr_read(dev, 0x40, 0x0C, &buffer0[1], 1);
+				dm_i2c_addr_read(dev, 0x40, 0x0D, &buffer0[2], 1);
+				dm_i2c_addr_read(dev, 0x41, 0x0B, &buffer1[0], 1);
+				dm_i2c_addr_read(dev, 0x41, 0x0C, &buffer1[1], 1);
+				dm_i2c_addr_read(dev, 0x41, 0x0D, &buffer1[2], 1);
+				value = 0x5a;
+				dm_i2c_addr_write(dev, 0x40, 0x0A, &value, 1);
+				value = 0x84;
+				dm_i2c_addr_write(dev, 0x40, 0x0E, &value, 1);
+				value = 0x5a;
+				dm_i2c_addr_write(dev, 0x41, 0x0A, &value, 1);
+				value = 0x44;
+				dm_i2c_addr_write(dev, 0x40, 0x0E, &value, 1);
+				dm_i2c_addr_write(dev, 0x41, 0x0B, &buffer1[0], 1);
+				dm_i2c_addr_write(dev, 0x41, 0x0C, &buffer1[1], 1);
+				dm_i2c_addr_write(dev, 0x41, 0x0D, &buffer1[2], 1);
+				value = 0x04;
+				dm_i2c_addr_write(dev, 0x42, 0x0E, &value, 1);
+				dm_i2c_addr_write(dev, 0x40, 0x0B, &buffer0[0], 1);
+				dm_i2c_addr_write(dev, 0x40, 0x0C, &buffer0[1], 1);
+				dm_i2c_addr_write(dev, 0x40, 0x0D, &buffer0[2], 1);
+
+				printf("%s>>>>>>rk860-0, rk860-1 calibration okay.\n", __func__);
+			}
+			break;
+
+		default:
+			printf("%s>>>>>>do nothing\n", __func__);
+			break;
+	}
+
+	return;
+}
+
 static int fan53555_probe(struct udevice *dev)
 {
 	struct fan53555_priv *priv = dev_get_priv(dev);
@@ -222,8 +363,12 @@ static int fan53555_probe(struct udevice *dev)
 	if (fan53555_voltages_setup(dev) < 0)
 		return -ENODATA;
 
-	debug("%s: FAN53555 option %d rev %d detected\n",
+	printf("%s: FAN53555 option %d rev %d detected\n",
 	      __func__, priv->die_id, priv->die_rev);
+	
+        if (priv->vendor == FAN53555_VENDOR_SILERGY) {
+		fan53555_rk860_calibration(dev, priv);
+        }
 
 	return 0;
 }
