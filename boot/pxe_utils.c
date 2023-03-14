@@ -384,9 +384,10 @@ err:
  *
  * @ctx: PXE context
  * @label: Label to process
+ * Returns 1 on success or < 0 on error
  */
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
-static void label_boot_fdtoverlay(struct pxe_context *ctx,
+static int label_boot_fdtoverlay(struct pxe_context *ctx,
 				  struct pxe_label *label)
 {
 	char *fdtoverlay = label->fdtoverlays;
@@ -401,13 +402,13 @@ static void label_boot_fdtoverlay(struct pxe_context *ctx,
 	working_fdt = map_sysmem(fdt_addr, 0);
 	err = fdt_check_header(working_fdt);
 	if (err)
-		return;
+		return err;
 
 	/* Get the specific overlay loading address */
 	fdtoverlay_addr_env = env_get("fdtoverlay_addr_r");
 	if (!fdtoverlay_addr_env) {
 		printf("Invalid fdtoverlay_addr_r for loading overlays\n");
-		return;
+		return -FDT_ERR_NOSPACE;
 	}
 
 	fdtoverlay_addr = hextoul(fdtoverlay_addr_env, NULL);
@@ -418,6 +419,9 @@ static void label_boot_fdtoverlay(struct pxe_context *ctx,
 		char *overlayfile;
 		char *end;
 		int len;
+
+		/* Clear error code */
+		err = 0;
 
 		/* Drop leading spaces */
 		while (*fdtoverlay == ' ')
@@ -465,7 +469,10 @@ static void label_boot_fdtoverlay(struct pxe_context *ctx,
 skip_overlay:
 		if (end)
 			free(overlayfile);
+		if (err)
+			return err;
 	} while ((fdtoverlay = strstr(fdtoverlay, " ")));
+	return 1;
 }
 #endif
 
@@ -500,6 +507,7 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
 	char mac_str[29] = "";
 	char ip_str[68] = "";
 	char *fit_addr = NULL;
+	char *fdtfilefree = NULL;
 	int bootm_argc = 2;
 	int zboot_argc = 3;
 	int len = 0;
@@ -631,7 +639,6 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
 	/* if fdt label is defined then get fdt from server */
 	} else if (bootm_argv[3]) {
 		char *fdtfile = NULL;
-		char *fdtfilefree = NULL;
 
 		if (label->fdt) {
 			fdtfile = label->fdt;
@@ -688,27 +695,37 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
 		}
 
 		if (fdtfile) {
-			int err = get_relfile_envaddr(ctx, fdtfile,
-						      "fdt_addr_r", NULL);
+#ifdef CONFIG_OF_LIBFDT_OVERLAY
+			bool apply_fdtoverlays = true;
+#endif
+			do {
+				int err = get_relfile_envaddr(ctx, fdtfile,
+								"fdt_addr_r", NULL);
 
-			free(fdtfilefree);
-			if (err < 0) {
-				bootm_argv[3] = NULL;
+				if (err < 0) {
+					bootm_argv[3] = NULL;
 
-				if (label->fdt) {
-					printf("Skipping %s for failure retrieving FDT\n",
-					       label->name);
-					goto cleanup;
+					if (label->fdt) {
+						printf("Skipping %s for failure retrieving FDT\n",
+							label->name);
+						goto cleanup;
+					}
 				}
-			}
 
-		if (label->kaslrseed)
-			label_boot_kaslrseed();
+				if (label->kaslrseed)
+					label_boot_kaslrseed();
 
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
-			if (label->fdtoverlays)
-				label_boot_fdtoverlay(ctx, label);
+				if (apply_fdtoverlays &&
+					label->fdtoverlays &&
+					label_boot_fdtoverlay(ctx, label) != 1) {
+					printf("Failed to load fdt overlays. Reload fdt without overlays.\n");
+					apply_fdtoverlays = false;
+					continue;
+				}
 #endif
+				break;
+			} while (true);
 		} else {
 			bootm_argv[3] = NULL;
 		}
@@ -758,6 +775,8 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
 	unmap_sysmem(buf);
 
 cleanup:
+	if (fdtfilefree)
+		free(fdtfilefree);
 	free(fit_addr);
 
 	return 1;
