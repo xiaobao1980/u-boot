@@ -84,7 +84,7 @@
 #define CONFIG_USB_OHCI_NEW
 #define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS	1
 
-#define CONFIG_PREBOOT
+#define CONFIG_PREBOOT "charge_pd"
 #define CONFIG_LIB_HW_RAND
 
 #endif
