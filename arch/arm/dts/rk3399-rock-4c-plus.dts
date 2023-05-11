@@ -554,6 +554,17 @@
 	status = "okay";
 };
 
+&spi1 {
+	max-freq = <10000000>;
+	status = "okay";
+
+	spiflash: flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+	};
+};
+
 &sdio0 {
 	#address-cells = <1>;
 	#size-cells = <0>;
