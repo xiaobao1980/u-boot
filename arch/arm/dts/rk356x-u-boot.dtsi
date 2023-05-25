@@ -13,7 +13,11 @@
 	};
 
 	chosen {
-		u-boot,spl-boot-order = "same-as-spl", &sdmmc0, &sdhci;
+		u-boot,spl-boot-order = "same-as-spl", &spiflash, &sdmmc0, &sdhci;
+	};
+
+	config {
+		u-boot,spl-payload-offset = <0x800000>; /* @ 8MB */
 	};
 
 	dmc: dmc {
@@ -151,3 +155,20 @@
 	};
 };
 #endif
+
+&sfc {
+	bootph-pre-ram;
+	u-boot,spl-sfc-no-dma;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	spiflash: flash@0 {
+		bootph-pre-ram;
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <24000000>;
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <1>;
+	};
+};
