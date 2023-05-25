@@ -6,6 +6,7 @@
 #ifndef _ROCKCHIP_COMMON_H_
 #define _ROCKCHIP_COMMON_H_
 #include <linux/sizes.h>
+#include <environment/distro/sf.h>
 
 #ifndef CFG_CPUID_OFFSET
 #define CFG_CPUID_OFFSET	0x7
