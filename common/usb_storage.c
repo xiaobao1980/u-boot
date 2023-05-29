@@ -1481,11 +1481,18 @@ int usb_stor_get_info(struct usb_device *dev, struct us_data *ss,
 #endif /* CONFIG_USB_BIN_FIXUP */
 	debug("ISO Vers %X, Response Data %X\n", usb_stor_buf[2],
 	      usb_stor_buf[3]);
-	if (usb_test_unit_ready(pccb, ss)) {
+	for (int i = 0; usb_test_unit_ready(pccb, ss); i++) {
 		printf("Device NOT ready\n"
 		       "   Request Sense returned %02X %02X %02X\n",
 		       pccb->sense_buf[2], pccb->sense_buf[12],
 		       pccb->sense_buf[13]);
+		if (pccb->sense_buf[2] == 0x02 && // Not Ready Sense Key
+		    pccb->sense_buf[12] == 0x04 && // Not Ready, In Process of Becoming Ready
+			pccb->sense_buf[13] == 0x01 &&
+			i < 5) {
+			udelay(200 * 1000);
+			continue;
+		}
 		if (dev_desc->removable == 1)
 			dev_desc->type = perq;
 		return 0;
