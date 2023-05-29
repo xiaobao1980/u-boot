@@ -21,3 +21,11 @@
 	bootph-all;
 	status = "okay";
 };
+
+&usb2phy0_otg {
+	status = "okay";
+};
+
+&usb_host0_xhci {
+	status = "okay";
+};
