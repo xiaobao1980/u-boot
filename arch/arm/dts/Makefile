@@ -182,6 +182,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3568) += \
 	rk3566-radxa-cm3-io.dtb \
 	rk3566-radxa-cm3-rpi-cm4-io.dtb \
 	rk3566-radxa-e23.dtb \
+	rk3566-rock-3c.dtb \
 	rk3566-soquartz-blade.dtb \
 	rk3566-soquartz-cm4.dtb \
 	rk3566-soquartz-model-a.dtb \
