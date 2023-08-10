@@ -42,7 +42,7 @@
 
 &pcie2x1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pcie20m1_pins &pcie_reset_h>;
+	pinctrl-0 = <&pcie_reset_h>;
 	reset-gpios = <&gpio1 RK_PB2 GPIO_ACTIVE_HIGH>;
 	vpcie3v3-supply = <&vcc3v3_pcie>;
 	status = "okay";
