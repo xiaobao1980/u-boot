@@ -106,7 +106,7 @@
 	snps,reset-delays-us = <0 20000 100000>;
 	tx_delay = <0x46>;
 	rx_delay = <0x2e>;
-	status = "okay";
+	status = "disabled";
 };
 
 &hdmi {
