@@ -161,6 +161,7 @@
 				regulator-min-microvolt = <500000>;
 				regulator-max-microvolt = <1350000>;
 				regulator-ramp-delay = <6001>;
+
 				regulator-state-mem {
 					regulator-off-in-suspend;
 				};
