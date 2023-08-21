@@ -71,10 +71,11 @@ static void meson_mmc_config_clock(struct mmc *mmc)
 	if (meson_gx_mmc_is_compatible(mmc->dev, MMC_COMPATIBLE_SM1))
 		meson_mmc_clk |= CLK_CO_PHASE_270;
 	else
-		meson_mmc_clk |= CLK_CO_PHASE_180;
+		meson_mmc_clk |= CLK_CO_PHASE_090;
 
-	/* 180 phase tx clock */
+	/* 000 phase tx & rx clock */
 	meson_mmc_clk |= CLK_TX_PHASE_000;
+	meson_mmc_clk |= CLK_RX_PHASE_000;
 
 	/* clock settings */
 	meson_mmc_clk |= clk_src;
