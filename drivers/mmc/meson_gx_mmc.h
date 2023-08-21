@@ -33,6 +33,10 @@ enum meson_gx_mmc_compatible {
 #define   CLK_TX_PHASE_090		(1 << 10)
 #define   CLK_TX_PHASE_180		(2 << 10)
 #define   CLK_TX_PHASE_270		(3 << 10)
+#define   CLK_RX_PHASE_000		(0 << 12)
+#define   CLK_RX_PHASE_090		(1 << 12)
+#define   CLK_RX_PHASE_180		(2 << 12)
+#define   CLK_RX_PHASE_270		(3 << 12)
 #define   CLK_ALWAYS_ON			BIT(24)
 
 #define MESON_SD_EMMC_CFG		0x44
