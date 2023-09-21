@@ -11,8 +11,8 @@
 #include "rk3566.dtsi"
 
 / {
-	model = "Radxa Zero 3W";
-	compatible = "radxa,zero-3w", "rockchip,rk3566";
+	model = "Radxa ZERO 3";
+	compatible = "radxa,zero3", "rockchip,rk3566";
 
 	aliases {
 		mmc0 = &sdhci;
