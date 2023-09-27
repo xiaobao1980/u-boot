@@ -1,9 +1,9 @@
 .. SPDX-License-Identifier: GPL-2.0+
 
-U-Boot for Radxa Zero2 (A311D)
+U-Boot for Radxa ZERO 2 PRO (A311D)
 ==============================
 
-Radxa Zero2 is a small form factor SBC based on the Amlogic A311D chipset with the
+Radxa ZERO 2 PRO is a small form factor SBC based on the Amlogic A311D chipset with the
 following specification:
 
 - Amlogic A311D (Quad A73 + Dual A53) CPU
@@ -25,7 +25,7 @@ U-Boot Compilation
 .. code-block:: bash
 
     $ export CROSS_COMPILE=aarch64-none-elf-
-    $ make radxa-zero2_defconfig
+    $ make radxa-zero-2pro_defconfig
     $ make
 
 U-Boot Signing with Pre-Built FIP repo
@@ -36,7 +36,7 @@ U-Boot Signing with Pre-Built FIP repo
     $ git clone https://github.com/LibreELEC/amlogic-boot-fip --depth=1
     $ cd amlogic-boot-fip
     $ mkdir my-output-dir
-    $ ./build-fip.sh radxa-zero2 /path/to/u-boot/u-boot.bin my-output-dir
+    $ ./build-fip.sh radxa-zero-2pro /path/to/u-boot/u-boot.bin my-output-dir
 
 U-Boot Manual Signing
 ---------------------
@@ -58,7 +58,7 @@ image so it is necessary to obtain binaries from sources published by the board 
     $ export CROSS_COMPILE=/opt/gcc-arm-10.2-2020.11-x86_64-aarch64-none-elf/bin/aarch64-none-elf-
     $ export ARCH=arm
     $ cd u-boot
-    $ make radxa-zero2_defconfig
+    $ make radxa-zero-2pro_defconfig
     $ make
 
     $ cp u-boot.bin ../fip/radxa-zero2/bl33.bin
