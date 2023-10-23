@@ -4,8 +4,8 @@
 #include "rk3568-radxa-cm3i.dtsi"
 
 / {
-	model = "Radxa E61 Carrier Board";
-	compatible = "radxa,e61", "radxa,cm3i", "rockchip,rk3568";
+	model = "Radxa Compute Module 3 Industrial (CM3i) IO Board";
+	compatible = "radxa,cm3i-io", "radxa,cm3i", "rockchip,rk3568";
 
 	aliases {
 		mmc1 = &sdmmc0;
