@@ -10,6 +10,13 @@ config TARGET_EVB_RK3328
 	  with full function and phisical connectors support like
 	  usb2.0 host ports, LVDS, JTAG, MAC, SDcard, HDMI, USB-2-serial...
 
+config TARGET_ROCK_PI_E_RK3328
+	bool "RK3328 evaluation board"
+	select BOARD_LATE_INIT
+	help
+	  Radxa ROCK Pi E is a Rockchip RK3328 based SBC (Single Board Computer)
+	  by Radxa.
+
 endchoice
 
 config ROCKCHIP_BOOT_MODE_REG
@@ -40,5 +47,6 @@ config TPL_STACK
 	default 0xff098000
 
 source "board/rockchip/evb_rk3328/Kconfig"
+source "board/radxa/rock-pi-e-rk3328/Kconfig"
 
 endif
