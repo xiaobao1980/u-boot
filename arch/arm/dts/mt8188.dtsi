@@ -6,6 +6,7 @@
  */
 
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/clock/mt8188-clk.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/pinctrl/mediatek,mt8188-pinfunc.h>
@@ -175,20 +176,32 @@
 			reg = <0 0x0c530a80 0 0x50>;
 		};
 
-		topckgen: syscon@10000000 {
-			compatible = "mediatek,mt8195-topckgen", "syscon";
+		topckgen: topckgen@10000000 {
+			compatible = "mediatek,mt8188-topckgen";
 			reg = <0 0x10000000 0 0x1000>;
 			#clock-cells = <1>;
 		};
 
-		infracfg: syscon@10001000 {
-			compatible = "mediatek,mt8195-infracfg", "syscon";
+		topckgen_cg: topckgen-cg@10000000 {
+			compatible = "mediatek,mt8188-topckgen-cg";
+			reg = <0 0x10000000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		infracfg_ao: infracfg-ao@10001000 {
+			compatible = "mediatek,mt8188-infracfg_ao";
 			reg = <0 0x10001000 0 0x1000>;
 			#clock-cells = <1>;
 		};
 
-		apmixedsys: syscon@1000c000 {
-			compatible = "mediatek,mt8195-apmixedsys", "syscon";
+		pericfg_ao: pericfg-ao@11003000 {
+			compatible = "mediatek,mt8188-pericfg_ao";
+			reg = <0 0x11003000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		apmixedsys: apmixedsys@1000c000 {
+			compatible = "mediatek,mt8188-apmixedsys";
 			reg = <0 0x1000c000 0 0x1000>;
 			#clock-cells = <1>;
 		};
@@ -231,6 +244,24 @@
 				 <&clk26m>;
 			clock-names = "source", "hclk", "source_cg";
 			status = "disabled";
+		};
+
+		imp_iic_wrap_c: syscon@11283000 {
+			compatible = "mediatek,mt8188-imp_iic_wrap_c";
+			reg = <0 0x11283000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		imp_iic_wrap_w: syscon@11e02000 {
+			compatible = "mediatek,mt8188-imp_iic_wrap_w";
+			reg = <0 0x11e02000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		imp_iic_wrap_en: syscon@11ec2000 {
+			compatible = "mediatek,mt8188-imp_iic_wrap_en";
+			reg = <0 0x11ec2000 0 0x1000>;
+			#clock-cells = <1>;
 		};
 	};
 };
