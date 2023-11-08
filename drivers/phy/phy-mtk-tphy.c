@@ -162,6 +162,10 @@
 #define P3D_RG_CDR_BIR_LTD1		GENMASK(28, 24)
 #define P3D_RG_CDR_BIR_LTD0		GENMASK(12, 8)
 
+#define U3P_U3_PHYD_TOP1		0x100
+#define P3D_RG_SSUSB_PHY_MODE		GENMASK(2, 1)
+#define P3D_RG_SSUSB_FORCE_PHY_MODE	BIT(0)
+
 #define U3P_U3_PHYD_RXDET1		0x128
 #define P3D_RG_RXDET_STB2_SET		GENMASK(17, 9)
 
@@ -262,6 +266,7 @@ struct mtk_phy_instance {
 	u32 eye_term;
 	u32 discth;
 	u32 pre_emphasis;
+	bool type_force_mode;
 };
 
 struct mtk_tphy {
@@ -367,6 +372,25 @@ static void u3_phy_instance_init(struct mtk_tphy *tphy,
 				 struct mtk_phy_instance *instance)
 {
 	struct u3phy_banks *u3_banks = &instance->u3_banks;
+	if (instance->type_force_mode) {
+		/* switch to USB 3.0 phy */
+		clrsetbits_le32(u3_banks->phyd + U3P_U3_PHYD_TOP1,
+				P3D_RG_SSUSB_PHY_MODE,
+				FIELD_PREP(P3D_RG_SSUSB_PHY_MODE, 0x01) |
+				P3D_RG_SSUSB_FORCE_PHY_MODE);
+
+		setbits_le32(u3_banks->chip + U3P_U3_CHIP_GPIO_CTLD,
+			     P3C_FORCE_IP_SW_RST | P3C_MCU_BUS_CK_GATE_EN);
+		setbits_le32(u3_banks->chip + U3P_U3_CHIP_GPIO_CTLE,
+			     P3C_RG_SWRST_U3_PHYD_FORCE_EN | P3C_RG_SWRST_U3_PHYD);
+
+		udelay(1);
+
+		clrbits_le32(u3_banks->chip + U3P_U3_CHIP_GPIO_CTLD,
+			     P3C_FORCE_IP_SW_RST | P3C_MCU_BUS_CK_GATE_EN);
+		clrbits_le32(u3_banks->chip + U3P_U3_CHIP_GPIO_CTLE,
+			     P3C_RG_SWRST_U3_PHYD_FORCE_EN | P3C_RG_SWRST_U3_PHYD);
+	}
 
 	/* gating PCIe Analog XTAL clock */
 	setbits_le32(u3_banks->spllc + U3P_SPLLC_XTALCTL3,
@@ -581,6 +605,9 @@ static void phy_parse_property(struct mtk_tphy *tphy,
 {
 	ofnode node = np_to_ofnode(instance->np);
 
+	if (instance->type == PHY_TYPE_USB3)
+		instance->type_force_mode = ofnode_read_bool(node, "mediatek,force-mode");
+
 	if (instance->type != PHY_TYPE_USB2)
 		return;
 
@@ -623,7 +650,7 @@ static int mtk_phy_init(struct phy *phy)
 	struct mtk_phy_instance *instance = tphy->phys[phy->id];
 	int ret;
 
-	ret = clk_enable(&instance->ref_clk);
+	ret = clk_enable_bulk(&instance->ref_clk);
 	if (ret < 0) {
 		dev_err(tphy->dev, "failed to enable ref_clk\n");
 		return ret;
