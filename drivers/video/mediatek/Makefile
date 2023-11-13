@@ -13,9 +13,13 @@ ifeq ($(CONFIG_VIDEO_MEDIATEK),y)
 			mtk_disp_rdma.o \
 			mtk_smi.o
 	else
-		obj-y += mtk_dsi_common.o
+		obj-y += mtk_dsi_common.o \
+			mtk_dp_common.o \
+			mtk_dp_intf.o \
+			mtk_dp_hal.o
 		obj-$(CONFIG_TARGET_MT8188) += \
 			dsi_mt8188.o \
+			dp_mt8188.o \
 			vdosys_mt8188.o \
 			disp_pwm_mt8188.o
 		obj-$(CONFIG_TARGET_MT8195) += \
