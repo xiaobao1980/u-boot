@@ -97,6 +97,18 @@
 		clock-names = "main", "mm";
 		status = "okay";
 	};
+
+	edp_tx: edp-tx@1c500000 {
+		compatible = "mediatek,mt8195-edp-tx";
+		reg = <0 0x60000000 0 0x02000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&edp_pin_default>;
+		vcc-gpios = <&gpio 6 GPIO_ACTIVE_HIGH>;
+		bl-en-gpios = <&gpio 95 GPIO_ACTIVE_HIGH>;
+		bl-vcc-gpios = <&gpio 96 GPIO_ACTIVE_HIGH>;
+		pwm-gpios = <&gpio 104 GPIO_ACTIVE_HIGH>;
+		status = "disabled";
+	};
 };
 
 &pio {
@@ -227,6 +239,33 @@
 
 		pins-bl {
 			pinmux = <PINMUX_GPIO97__FUNC_DISP_PWM0>;
+		};
+	};
+
+	edp_pin_default: edp-pin-default {
+		edp-panel-vcc {
+			pinmux = <PINMUX_GPIO6__FUNC_GPIO6>;
+			output-low;
+		};
+
+		edp-panel-hpd {
+			pinmux = <PINMUX_GPIO7__FUNC_EDP_TX_HPD>;
+			bias-pull-up;
+		};
+
+		edp-panel-bl-en {
+			pinmux = <PINMUX_GPIO95__FUNC_GPIO95>;
+			output-low;
+		};
+
+		edp-panel-bl-vcc {
+			pinmux = <PINMUX_GPIO96__FUNC_GPIO96>;
+			output-low;
+		};
+
+		edp-panel-pwm {
+			pinmux = <PINMUX_GPIO104__FUNC_DISP_PWM1>;
+			output-low;
 		};
 	};
 };
