@@ -94,6 +94,17 @@
 		enable-gpios = <&gpio 111 GPIO_ACTIVE_HIGH>;
 		status = "okay";
 	};
+
+	edp_tx: edp-tx@1c500000 {
+		compatible = "mediatek,mt8188-edp-tx";
+		reg = <0 0x60000000 0 0x02000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&edp_pin_default>;
+		vcc-gpios = <&gpio 15 GPIO_ACTIVE_HIGH>;
+		bl-en-gpios = <&gpio 8 GPIO_ACTIVE_HIGH>;
+		pwm-gpios = <&gpio 29 GPIO_ACTIVE_HIGH>;
+		status = "disabled";
+	};
 };
 
 &watchdog {
@@ -137,6 +148,28 @@
 
 		pins-bl {
 			pinmux = <PINMUX_GPIO29__FUNC_O_DISP_PWM0>;
+		};
+	};
+
+	edp_pin_default: edp-pin-default {
+		edp-panel-vcc {
+			pinmux = <PINMUX_GPIO15__FUNC_B_GPIO15>;
+			output-low;
+		};
+
+		edp-panel-hpd {
+			pinmux = <PINMUX_GPIO17__FUNC_I0_EDP_TX_HPD>;
+			bias-pull-up;
+		};
+
+		edp-panel-bl-en {
+			pinmux = <PINMUX_GPIO8__FUNC_B_GPIO8>;
+			output-low;
+		};
+
+		edp-panel-pwm {
+			pinmux = <PINMUX_GPIO29__FUNC_O_DISP_PWM0>;
+			output-low;
 		};
 	};
 };
