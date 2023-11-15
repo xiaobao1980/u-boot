@@ -29,6 +29,7 @@ ifeq ($(CONFIG_VIDEO_MEDIATEK),y)
 			disp_pwm_mt8195.o
 		obj-$(CONFIG_TARGET_MT8370) += \
 			dsi_mt8188.o \
+			dp_mt8188.o \
 			vdosys_mt8188.o \
 			disp_pwm_mt8188.o
 	endif
