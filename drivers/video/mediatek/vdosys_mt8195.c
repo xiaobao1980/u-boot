@@ -28,9 +28,15 @@
 #define maindisp_printf(string, args...)
 #endif
 
+enum {
+	MTK_MAINDISP_OUTPUT_DSI,
+	MTK_MAINDISP_OUTPUT_EDP,
+};
+
 static u32 _maindisp_output_width;
 static u32 _maindisp_output_height;
 static u32 _logobase;
+static u32 _scenario = MTK_MAINDISP_OUTPUT_DSI;
 
 struct mtk_maindisp_priv {
 	void __iomem *base;
@@ -39,30 +45,38 @@ struct mtk_maindisp_priv {
 static void mtk_maindisp_config_ovl(u32 engine_num, u32 width, u32 height)
 {
 	unsigned int reg_offset;
+	unsigned int val;
 
 	reg_offset = (engine_num == 0) ? 0 : (OVL1_BASE - OVL0_BASE);
 
-	DISP_REG_SET(reg_offset + DISP_REG_OVL_ROI_SIZE, ((width & 0x1fff) |
-				 (height & 0x1fff) << 16));
-	DISP_REG_SET(reg_offset + DISP_REG_OVL_ROI_BGCLR, 0xff000000);
-	DISP_REG_SET(reg_offset + DISP_REG_OVL_SRC_CON, 0x00000001);
+	DISP_REG_SET(reg_offset + DISP_REG_OVL_ROI_SIZE, ((width & DISP_REG_OVL_ROI_WIDTH_MASK) |
+		     (height & DISP_REG_OVL_ROI_HEIGHT_MASK) << DISP_REG_OVL_ROI_HEIGHT_SHIFT));
+	DISP_REG_SET(reg_offset + DISP_REG_OVL_ROI_BGCLR, DISP_REG_OVL_ROI_BGCLR_ALPHA);
+	DISP_REG_SET(reg_offset + DISP_REG_OVL_SRC_CON, DISP_REG_OVL_SRC_CON_L0_EN);
 
-	DISP_REG_SET(reg_offset + DISP_REG_OVL_L0_CON, 0x008020FF);
+	val = DISP_REG_OVL_L0_CON_CLRFMT_MAN |
+		  DISP_REG_OVL_L0_CON_CLRFMT_BGRA8888 << DISP_REG_OVL_L0_CON_CLRFMT_SHIFT |
+		  DISP_REG_OVL_L0_CON_CLRFMT_ALPHA_VALUE;
+
+	DISP_REG_SET(reg_offset + DISP_REG_OVL_L0_CON, val);
 	DISP_REG_SET(reg_offset + DISP_REG_OVL_L0_PITCH, width * LOGO_BYTE_PER_PIXEL);
 
-	DISP_REG_SET(reg_offset + DISP_REG_OVL_L0_SRC_SIZE, ((width & 0x1fff) |
-				 (height & 0x1fff) << 16));
-	DISP_REG_SET(reg_offset + DISP_REG_OVL_L0_OFFSET, 0x00000000);
+	DISP_REG_SET(reg_offset + DISP_REG_OVL_L0_SRC_SIZE,
+		     ((width & DISP_REG_OVL_L0_SRC_WIDTH_MASK) |
+		     (height & DISP_REG_OVL_L0_SRC_HEIGHT_MASK) <<
+		     DISP_REG_OVL_L0_SRC_HEIGHT_SHIFT));
+	DISP_REG_SET(reg_offset + DISP_REG_OVL_L0_OFFSET, 0x0);
 	if (engine_num == 0)
 		DISP_REG_SET(reg_offset + DISP_REG_OVL_L0_ADDR, _logobase);
 	else
 		DISP_REG_SET(reg_offset + DISP_REG_OVL_L0_ADDR, _logobase +
 					 (width * LOGO_BYTE_PER_PIXEL));
 
-	DISP_REG_SET(reg_offset + DISP_REG_OVL_RDMA0_CTRL, 0x00000001);
+	DISP_REG_SET(reg_offset + DISP_REG_OVL_RDMA0_CTRL, DISP_REG_OVL_RDMA0_EN);
 
-	DISP_REG_SET(reg_offset + DISP_REG_OVL_DATAPATH_CON, 0x04000001);
-	DISP_REG_SET(reg_offset + DISP_REG_OVL_EN, 0x00000001);
+	val = DISP_REG_OVL_DATAPATH_OUTPUT_CLAMP | DISP_REG_OVL_DATAPATH_LAYER_SMI_ID_EN;
+	DISP_REG_SET(reg_offset + DISP_REG_OVL_DATAPATH_CON, val);
+	DISP_REG_SET(reg_offset + DISP_REG_OVL_EN, DISP_REG_OVL_EN_ENABLE);
 }
 
 static void mtk_maindisp_config_rdma(u32 engine_num, u32 width, u32 height)
@@ -71,16 +85,28 @@ static void mtk_maindisp_config_rdma(u32 engine_num, u32 width, u32 height)
 
 	reg_offset = (engine_num == 0) ? 0 : (DISP_RDMA1_BASE - DISP_RDMA0_BASE);
 
-	DISP_REG_SET(reg_offset + DISP_REG_RDMA_GLOBAL_CON, 0x00000001);
-	DISP_REG_SET(reg_offset + DISP_REG_RDMA_SIZE_CON_0, (width & 0x1fff));
-	DISP_REG_SET(reg_offset + DISP_REG_RDMA_SIZE_CON_1, (height & 0x1fff));
+	DISP_REG_SET(reg_offset + DISP_REG_RDMA_GLOBAL_CON, DISP_REG_RDMA_GLOBAL_CON_ENABLE);
+	DISP_REG_SET(reg_offset + DISP_REG_RDMA_SIZE_CON_0,
+		     (width & DISP_REG_RDMA_SIZE_WIDTH_MASK));
+	DISP_REG_SET(reg_offset + DISP_REG_RDMA_SIZE_CON_1,
+		     (height & DISP_REG_RDMA_SIZE_HEIGHT_MASK));
 
-	DISP_REG_SET(reg_offset + DISP_REG_RDMA_FIFO_CON, 0x07800000);
-	DISP_REG_SET(reg_offset + DISP_REG_RDMA_MEM_GMC_SETTING_0, 0x85ed05b2);
-	DISP_REG_SET(reg_offset + DISP_REG_RDMA_MEM_GMC_SETTING_1, 0x85b2053e);
-	DISP_REG_SET(reg_offset + DISP_REG_RDMA_MEM_GMC_SETTING_2, 0x00000100);
-	DISP_REG_SET(reg_offset + DISP_REG_RDMA_SRAM_SEL, 0);
-	DISP_REG_SET(reg_offset + DISP_REG_RDMA_STALL_CG_CON, 0);
+	DISP_REG_SET(reg_offset + DISP_REG_RDMA_FIFO_CON,
+		     DISP_REG_RDMA_FIFO_PSEUDO_SIZE << DISP_REG_RDMA_FIFO_PSEUDO_SIZE_SHIFT);
+	DISP_REG_SET(reg_offset + DISP_REG_RDMA_MEM_GMC_SETTING_0,
+		     DISP_REG_RDMA_MEM_GMC_FORCE_PREULTRA |
+		     (DISP_REG_RDMA_MEM_GMC_PREULTRA_THRESH_HIGH <<
+		     DISP_REG_RDMA_MEM_GMC_PREULTRA_THRESH_HIGH_SHIFT) |
+		     DISP_REG_RDMA_MEM_GMC_PREULTRA_THRESH_LOW);
+	DISP_REG_SET(reg_offset + DISP_REG_RDMA_MEM_GMC_SETTING_1,
+		     DISP_REG_RDMA_MEM_GMC_BLOCK_ULTRA |
+		     (DISP_REG_RDMA_MEM_GMC_ULTRA_THRESH_HIGH <<
+		     DISP_REG_RDMA_MEM_GMC_ULTRA_THRESH_HIGH_SHIFT) |
+		     DISP_REG_RDMA_MEM_GMC_ULTRA_THRESH_LOW);
+	DISP_REG_SET(reg_offset + DISP_REG_RDMA_MEM_GMC_SETTING_2,
+		     DISP_REG_RDMA_MEM_GMC_ISSUE_REQ_THRESHOLD);
+	DISP_REG_SET(reg_offset + DISP_REG_RDMA_SRAM_SEL, DISP_REG_RDMA_SRAM_SEL_DISP_RDMA_SRAM);
+	DISP_REG_SET(reg_offset + DISP_REG_RDMA_STALL_CG_CON, DISP_REG_RDMA_STALL_CG_CON_ENG_CG);
 }
 
 static void mtk_maindisp_config_color(u32 engine_num, u32 width, u32 height)
@@ -89,12 +115,17 @@ static void mtk_maindisp_config_color(u32 engine_num, u32 width, u32 height)
 
 	reg_offset = (engine_num == 0) ? 0 : (COLOR1_BASE - COLOR0_BASE);
 
-	DISP_REG_SET(reg_offset + DISP_COLOR_INTERNAL_IP_WIDTH, (width & 0x1fff));
-	DISP_REG_SET(reg_offset + DISP_COLOR_INTERNAL_IP_HEIGHT, (height & 0x1fff));
-	DISP_REG_SET(reg_offset + DISP_COLOR_CFG_MAIN, 0x02000080);
-	DISP_REG_SET(reg_offset + DISP_COLOR_CM1_EN, 0x00000000);
-	DISP_REG_SET(reg_offset + DISP_COLOR_CM2_EN, 0x00000000);
-	DISP_REG_SET(reg_offset + DISP_COLOR_START, 0x00000013);
+	DISP_REG_SET(reg_offset + DISP_COLOR_INTERNAL_IP_WIDTH,
+		     (width & DISP_COLOR_INTERNAL_IP_WIDTH_MASK));
+	DISP_REG_SET(reg_offset + DISP_COLOR_INTERNAL_IP_HEIGHT,
+		     (height & DISP_COLOR_INTERNAL_IP_HEIGHT_MASK));
+	DISP_REG_SET(reg_offset + DISP_COLOR_CFG_MAIN,
+		     DISP_COLOR_CFG_MAIN_8BIT_SWITCH | DISP_COLOR_CFG_MAIN_ALL_BYPASS);
+	DISP_REG_SET(reg_offset + DISP_COLOR_CM1_EN, DISP_COLOR_CM1_EN_ENABLE);
+	DISP_REG_SET(reg_offset + DISP_COLOR_CM2_EN, DISP_COLOR_CM2_EN_ENABLE);
+	DISP_REG_SET(reg_offset + DISP_COLOR_START,
+		     DISP_COLOR_START_DISP_8BIT_YUV | DISP_COLOR_START_DISP_COLOR_OUT_SEL |
+		     DISP_COLOR_START_DISP_COLOR_START);
 }
 
 static void mtk_maindisp_config_ccorr(u32 engine_num, u32 width, u32 height)
@@ -103,10 +134,12 @@ static void mtk_maindisp_config_ccorr(u32 engine_num, u32 width, u32 height)
 
 	reg_offset = (engine_num == 0) ? 0 : (CCORR1_BASE - CCORR0_BASE);
 
-	DISP_REG_SET(reg_offset + DISP_REG_CCORR_SIZE, (width & 0x1fff) << 16 |
-				 (height & 0x1fff));
-	DISP_REG_SET(reg_offset + DISP_REG_CCORR_CFG, 0x00000401);
-	DISP_REG_SET(reg_offset + DISP_REG_CCORR_EN, 0x00000001);
+	DISP_REG_SET(reg_offset + DISP_REG_CCORR_SIZE,
+		     (width & DISP_REG_CCORR_SIZE_WIDTH_MASK) << DISP_REG_CCORR_SIZE_WIDTH_SHIFT |
+		     (height & DISP_REG_CCORR_SIZE_HEIGHT_MASK));
+	DISP_REG_SET(reg_offset + DISP_REG_CCORR_CFG,
+		     DISP_REG_CCORR_CFG_8BIT | DISP_REG_CCORR_CFG_RELAY_MODE_DISABLE);
+	DISP_REG_SET(reg_offset + DISP_REG_CCORR_EN, DISP_REG_CCORR_EN_ENABLE);
 }
 
 static void mtk_maindisp_config_aal(u32 engine_num, u32 width, u32 height)
@@ -115,11 +148,15 @@ static void mtk_maindisp_config_aal(u32 engine_num, u32 width, u32 height)
 
 	reg_offset = (engine_num == 0) ? 0 : (DISP_AAL1_BASE - DISP_AAL0_BASE);
 
-	DISP_REG_SET(reg_offset + DISP_AAL_SIZE, (width & 0x1fff) << 16 | (height & 0x1fff));
-	DISP_REG_SET(reg_offset + DISP_AAL_OUTPUT_SIZE, (width & 0x1fff) << 16 | (height & 0x1fff));
-	DISP_REG_SET(reg_offset + DISP_AAL_EN, 0x00000001);
-	DISP_REG_SET(reg_offset + DISP_AAL_CFG, 0x00000111);
-	DISP_REG_SET(reg_offset + DISP_AAL_CFG_MAIN, 0x0000000a);
+	DISP_REG_SET(reg_offset + DISP_AAL_SIZE,
+		     (width & DISP_AAL_OUTPUT_WIDTH_MASK) << DISP_AAL_OUTPUT_WIDTH_SHIFT |
+		     (height & DISP_AAL_OUTPUT_HEIGHT_MASK));
+	DISP_REG_SET(reg_offset + DISP_AAL_OUTPUT_SIZE,
+		     (width & DISP_AAL_OUTPUT_WIDTH_MASK) << DISP_AAL_OUTPUT_WIDTH_SHIFT |
+		     (height & DISP_AAL_OUTPUT_HEIGHT_MASK));
+	DISP_REG_SET(reg_offset + DISP_AAL_EN, DISP_AAL_EN_ENABLE);
+	DISP_REG_SET(reg_offset + DISP_AAL_CFG,
+		     DISP_AAL_CF_8BIT_SWITCH | DISP_AAL_CF_CG_DISABLE | DISP_AAL_CF_RELAY_MODE);
 }
 
 static void mtk_maindisp_config_gamma(u32 engine_num, u32 width, u32 height)
@@ -128,10 +165,12 @@ static void mtk_maindisp_config_gamma(u32 engine_num, u32 width, u32 height)
 
 	reg_offset = (engine_num == 0) ? 0 : (DISP_GAMMA1_BASE - DISP_GAMMA0_BASE);
 
-	DISP_REG_SET(reg_offset + DISP_REG_GAMMA_SIZE, (width & 0x1fff) << 16 |
-				 (height & 0x1fff));
-	DISP_REG_SET(reg_offset + DISP_REG_GAMMA_CFG, 0x00000101);
-	DISP_REG_SET(reg_offset + DISP_REG_GAMMA_EN, 0x00000001);
+	DISP_REG_SET(reg_offset + DISP_REG_GAMMA_SIZE,
+		     (width & DISP_REG_GAMMA_WIDTH_MASK) << DISP_REG_GAMMA_WIDTH_SHIFT |
+		     (height & DISP_REG_GAMMA_HEIGHT_MASK));
+	DISP_REG_SET(reg_offset + DISP_REG_GAMMA_CFG,
+		     DISP_REG_GAMMA_CFG_STALL_CG_ON | DISP_REG_GAMMA_RELAY_MODE_ENABLE);
+	DISP_REG_SET(reg_offset + DISP_REG_GAMMA_EN, DISP_REG_GAMMA_EN_ENABLE);
 }
 
 static void mtk_maindisp_config_dither(u32 engine_num, u32 width, u32 height)
@@ -140,28 +179,32 @@ static void mtk_maindisp_config_dither(u32 engine_num, u32 width, u32 height)
 
 	reg_offset = (engine_num == 0) ? 0 : (DITHER1_BASE - DITHER0_BASE);
 
-	DISP_REG_SET(reg_offset + DISP_REG_DITHER_SIZE, (width & 0x1fff) << 16 |
-				 (height & 0x1fff));
-	DISP_REG_SET(reg_offset + DISP_REG_DITHER_CFG, 0x00000001);
-	DISP_REG_SET(reg_offset + DISP_REG_DITHER_EN, 0x00000001);
-	DISP_REG_SET(reg_offset + DISP_REG_DITHER_14, 0x00000000);
-	DISP_REG_SET(reg_offset + DISP_REG_DITHER_6, 0x00003004);
-	DISP_REG_SET(reg_offset + DISP_REG_DITHER_5, 0x00000000);
+	DISP_REG_SET(reg_offset + DISP_REG_DITHER_SIZE,
+		     (width & DISP_REG_DITHER_SIZE_WIDTH_MASK) <<
+		     DISP_REG_DITHER_SIZE_WIDTH_SHIFT |
+		     (height & DISP_REG_DITHER_SIZE_HEIGHT_MASK));
+	DISP_REG_SET(reg_offset + DISP_REG_DITHER_CFG, DISP_REG_DITHER_CFG_RELAY_MODE_ENABLE);
+	DISP_REG_SET(reg_offset + DISP_REG_DITHER_EN, DISP_REG_DITHER_EN_ENABLE);
+	DISP_REG_SET(reg_offset + DISP_REG_DITHER_14, DISP_REG_DITHER_14_TESTPIN_INPUT_ENABLE);
+	DISP_REG_SET(reg_offset + DISP_REG_DITHER_6,
+		     DISP_REG_DITHER_6_FPHASE_R | DISP_REG_DITHER_6_FPHASE_EN |
+		     DISP_REG_DITHER_6_RDITHER_EN);
+	DISP_REG_SET(reg_offset + DISP_REG_DITHER_5, DISP_REG_DITHER_5_SHORT_LINE_LENGTH_VALUE);
 }
 
 static void mtk_maindisp_config_merge(u32 width, u32 height)
 {
-	DISP_REG_SET(DISP_MERGE_CFG_0, ((height << 16) | width));
-	DISP_REG_SET(DISP_MERGE_CFG_1, ((height << 16) | width));
+	DISP_REG_SET(DISP_MERGE_CFG_0, ((height << DISP_MERGE_CFG_HEIGHT_SHIFT) | width));
+	DISP_REG_SET(DISP_MERGE_CFG_1, ((height << DISP_MERGE_CFG_HEIGHT_SHIFT) | width));
 
-	DISP_REG_SET(DISP_MERGE_CFG_4, ((height << 16) | width));
-	DISP_REG_SET(DISP_MERGE_CFG_12, 0x6);
+	DISP_REG_SET(DISP_MERGE_CFG_4, ((height << DISP_MERGE_CFG_HEIGHT_SHIFT) | width));
+	DISP_REG_SET(DISP_MERGE_CFG_12, DISP_MERGE_CFG_12_CFG_10_10_1PI_2PO_BUF_MODE);
 
-	DISP_REG_SET(DISP_MERGE_CFG_24, ((height << 16) | width));
-	DISP_REG_SET(DISP_MERGE_CFG_25, ((height << 16) | width));
-	DISP_REG_SET(DISP_MERGE_CFG_26, ((height << 16) | width));
-	DISP_REG_SET(DISP_MERGE_CFG_27, ((height << 16) | width));
-	DISP_REG_SET(DISP_MERGE_ENABLE, 0x00000001);
+	DISP_REG_SET(DISP_MERGE_CFG_24, ((height << DISP_MERGE_CFG_HEIGHT_SHIFT) | width));
+	DISP_REG_SET(DISP_MERGE_CFG_25, ((height << DISP_MERGE_CFG_HEIGHT_SHIFT) | width));
+	DISP_REG_SET(DISP_MERGE_CFG_26, ((height << DISP_MERGE_CFG_HEIGHT_SHIFT) | width));
+	DISP_REG_SET(DISP_MERGE_CFG_27, ((height << DISP_MERGE_CFG_HEIGHT_SHIFT) | width));
+	DISP_REG_SET(DISP_MERGE_ENABLE, DISP_MERGE_ENABLE_ENABLE);
 }
 
 static void mtk_maindisp_config_mux(void)
@@ -170,37 +213,116 @@ static void mtk_maindisp_config_mux(void)
 
 	mtk_maindisp_get_w_h(&width, &height);
 
-	DISP_REG_SET(MT8195_VDO0_OVL_MOUT_EN, 0x1);
-	DISP_REG_SET(MT8195_VDO0_SEL_IN, 0x10000);
-	DISP_REG_SET(MT8195_VDO0_SEL_OUT, 0x1);
+	DISP_REG_SET(MT8195_VDO0_OVL_MOUT_EN, MT8195_VDO0_OVL_MOUT_EN_OUTPUT_TO_RDMA0);
+
+	switch (_scenario) {
+	case MTK_MAINDISP_OUTPUT_DSI:
+		DISP_REG_SET(MT8195_VDO0_SEL_IN,
+			     MT8195_VDO0_DSI0_IN_FROM_DSC_WRAP0 << MT8195_VDO0_DSI0_IN_SHIFT);
+		DISP_REG_SET(MT8195_VDO0_SEL_OUT,
+			     MT8195_DISP_DITHER0_OUT_TO_DSI0 << MT8195_DISP_DITHER0_OUT_SHIFT);
+		break;
+	case MTK_MAINDISP_OUTPUT_EDP:
+		DISP_REG_SET(MT8195_VDO0_SEL_IN,
+			     MT8195_VDO0_DP_INTF0_IN_FROM_VPP_MERGE <<
+			     MT8195_VDO0_DP_INTF0_IN_SHIFT);
+		DISP_REG_SET(MT8195_VDO0_SEL_OUT,
+			     MT8195_DSC_WRAP0_OUT_TO_VPP_MERGE0 << MT8195_DSC_WRAP0_OUT_SHIFT |
+			     MT8195_DSC_VPP_MERGE0_TO_DP_INTF0 << MT8195_DSC_VPP_MERGE0_OUT_SHIFT);
+		break;
+	}
 }
 
 static void mtk_maindisp_config_mutex(void)
 {
-	DISP_REG_SET(MM_MUTEX_BASE + 0x030, 0x81003fd);
-	DISP_REG_SET(MM_MUTEX_BASE + 0x02c, 0x81);
-	DISP_REG_SET(MM_MUTEX_BASE + 0x034, 0x0);
-	DISP_REG_SET(MM_MUTEX_BASE + 0x020, 0x1);
+	u32 val;
+
+	val = DISP_MUTEX0_VDO0_VPP_MERGE0 |
+		  DISP_MUTEX0_VDO0_DSC_WRAP0 |
+		  DISP_MUTEX0_VDO0_DISP_DITHER0 |
+		  DISP_MUTEX0_VDO0_DISP_GAMMA0 |
+		  DISP_MUTEX0_VDO0_DISP_AAL0 |
+		  DISP_MUTEX0_VDO0_DISP_CCORR0 |
+		  DISP_MUTEX0_VDO0_DISP_COLOR0 |
+		  DISP_MUTEX0_VDO0_DISP_RDMA0 |
+		  DISP_MUTEX0_VDO0_DISP_OVL0;
+
+	switch (_scenario) {
+	case MTK_MAINDISP_OUTPUT_DSI:
+		val |= DISP_MUTEX0_VDO0_DSI0;
+		DISP_REG_SET(DISP_MUTEX0_MOD0, val);
+		DISP_REG_SET(DISP_MUTEX0_CTL,
+			     DISP_MUTEX0_MUTEX_EOF_DSI0 << DISP_MUTEX0_MUTEX_EOF_SHIFT |
+			     DISP_MUTEX0_MUTEX_SOF_DSI0);
+		break;
+	case MTK_MAINDISP_OUTPUT_EDP:
+		val |= DISP_MUTEX0_VDO0_DP_INTF0 | DISP_MUTEX0_VDO0_DSC_WRAP0;
+		DISP_REG_SET(DISP_MUTEX0_MOD0, val);
+		DISP_REG_SET(DISP_MUTEX0_CTL,
+			     DISP_MUTEX0_MUTEX_EOF_DP_INTF_EDP << DISP_MUTEX0_MUTEX_EOF_SHIFT |
+			     DISP_MUTEX0_MUTEX_SOF_DP_INTF_EDP);
+		break;
+	}
+	DISP_REG_SET(DISP_MUTEX0_EN, DISP_MUTEX0_EN_ENABLE);
 }
 
 static void mtk_maindisp_init(void)
 {
-	/* config VDOSYS0 CG to support dsi0 */
-	DISP_REG_SET(VDOSYS0_CONFIG_BASE + 0x108, 0x5a80555);
-	DISP_REG_SET(VDOSYS0_CONFIG_BASE + 0x118, 0xfc01);
+	u32 val;
 
-	/* Force enable SMI_LARB1 clk on vpp0_cg for OVL1 */
-	DISP_REG_SET(VPP0_CONFIG_BASE + 0x34, 0x0FFFFFFF);
+	val = MT8195_VDO0_OVL_GLOBAL_CG_B26_DISP_MUTEX0 |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B24_VPP_MERGE0 |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B23_DSC_WRAP0 |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B19_DISP_RDMA0 |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B10_DISP_DITHER0 |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B8_DISP_GAMMA0 |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B6_DISP_AAL0 |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B4_DISP_CCORR0 |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B2_DISP_COLOR0 |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B0_DISP_OVL0;
+
+	/* config VDOSYS0 CG according to scenario*/
+	switch (_scenario) {
+	case MTK_MAINDISP_OUTPUT_DSI:
+		val |= MT8195_VDO0_OVL_GLOBAL_CG_B21_DSI0;
+		break;
+	case MTK_MAINDISP_OUTPUT_EDP:
+		val |= MT8195_VDO0_OVL_GLOBAL_CG_B25_DP_INTF0;
+		break;
+	}
+	DISP_REG_SET(MT8195_VDO0_OVL_GLOBAL_CG_CLR0, val);
+
+	val = MT8195_VDO0_OVL_GLOBAL_CG_B15_SMI_RSI |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B14_SMI_LARM |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B13_SMI_IOMMU |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B12_SMI_EMI |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B11_SMI_COMMON |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B10_SMI_GALS |
+		  MT8195_VDO0_OVL_GLOBAL_CG_B0_DISP_DL_ASYNC0;
+
+	DISP_REG_SET(MT8195_VDO0_OVL_GLOBAL_CG_CLR1, val);
 
 	/* Disable Larb 0 IOMMU */
-	DISP_REG_SET(DISPSYS_SMI_LARB0_BASE + 0x388, 0x0);
+	DISP_REG_SET(SMI_LARB0_OVL0_NON_SEC_CON, SMI_LARB0_OVL0_NON_SEC_CON_DISABLE_MMU);
 }
 
 void mtk_maindisp_reset(void)
 {
-	/* reset dsi0 via VDOSYS0 reset bit */
-	DISP_REG_CLR_BITS(VDOSYS0_CONFIG_BASE + 0x190, 0x200000);
-	DISP_REG_SET_BITS(VDOSYS0_CONFIG_BASE + 0x190, 0x200000);
+	/* reset according to scenario */
+	switch (_scenario) {
+	case MTK_MAINDISP_OUTPUT_DSI:
+		DISP_REG_CLR_BITS(MT8195_VDO0_OVL_GLOBAL0_SW0_RST_B,
+				  MT8195_VDO0_OVL_GLOBAL_CG_B21_DSI0);
+		DISP_REG_SET_BITS(MT8195_VDO0_OVL_GLOBAL0_SW0_RST_B,
+				  MT8195_VDO0_OVL_GLOBAL_CG_B21_DSI0);
+		break;
+	case MTK_MAINDISP_OUTPUT_EDP:
+		DISP_REG_CLR_BITS(MT8195_VDO0_OVL_GLOBAL0_SW0_RST_B,
+				  MT8195_VDO0_OVL_GLOBAL_CG_B25_DP_INTF0);
+		DISP_REG_SET_BITS(MT8195_VDO0_OVL_GLOBAL0_SW0_RST_B,
+				  MT8195_VDO0_OVL_GLOBAL_CG_B25_DP_INTF0);
+		break;
+	}
 }
 
 void mtk_maindisp_set_w_h(u32 width, u32 height)
@@ -223,6 +345,11 @@ void mt_maindisp_set_fb_addr(u32 addr)
 u32 mt_maindisp_get_fb_addr(void)
 {
 	return _logobase;
+}
+
+void mt_maindisp_set_scenario_edp(void)
+{
+	_scenario = MTK_MAINDISP_OUTPUT_EDP;
 }
 
 void mtk_maindisp_update(u32 x, u32 y, u32 width, u32 height)
