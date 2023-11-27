@@ -146,7 +146,7 @@ u32 lcm_if_set_backlight(u32 level, u32 level_max, bool use_default_level)
 	/* enable topck_gen clock */
 	PWM_REG_SET_BITS(TOPCKGEN_BASE + 0x000000a0, BIT(7));
 	/* enable infrao clock */
-	PWM_REG_SET_BITS(INFR_AO_BASE + 0x000000c4, BIT(20));
+	PWM_REG_WRITE(INFR_AO_BASE + 0x000000c4, BIT(20));
 
 	disp_pwm_printf("UBOOT: disp_pwm_clock=0x%x\n", PWM_REG_READ(TOPCKGEN_BASE + 0x00000098));
 	disp_pwm_printf("UBOOT: disp_pwm_infraao_clock=0x%x\n", PWM_REG_READ(INFR_AO_BASE + 0xc8));
