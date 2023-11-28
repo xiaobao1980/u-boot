@@ -203,6 +203,12 @@
 			#clock-cells = <1>;
 		};
 
+		apmixedsys_cg: apmixedsys-cg@1000c000 {
+			compatible = "mediatek,mt8195-apmixedsys-cg";
+			reg = <0 0x1000c000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
 		imp_iic_wrap_s: imp_iic_wrap_s@11d03000 {
 			compatible = "mediatek,mt8195-imp_iic_wrap_s";
 			reg = <0 0x11d03000 0 0x1000>;
@@ -416,7 +422,7 @@
 
 			u3port0: usb-phy@700 {
 				reg = <0x700 0x700>;
-				clocks = <&apmixedsys CLK_APMIXED_PLL_SSUSB26M>,
+				clocks = <&apmixedsys_cg CLK_APMIXED_PLL_SSUSB26M>,
 					 <&topckgen CLK_TOP_SSUSB_PHY_REF>;
 				clock-names = "ref", "da_ref";
 				#phy-cells = <1>;
@@ -446,7 +452,7 @@
 
 			u3port1: usb3-phy@700 {
 				reg = <0x700 0x700>;
-				clocks = <&apmixedsys CLK_APMIXED_PLL_SSUSB26M>,
+				clocks = <&apmixedsys_cg CLK_APMIXED_PLL_SSUSB26M>,
 					<&topckgen CLK_TOP_SSUSB_PHY_P1_REF>;
 				clock-names = "ref", "da_ref";
 				#phy-cells = <1>;
