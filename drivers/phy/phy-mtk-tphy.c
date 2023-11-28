@@ -650,7 +650,7 @@ static int mtk_phy_init(struct phy *phy)
 	struct mtk_phy_instance *instance = tphy->phys[phy->id];
 	int ret;
 
-	ret = clk_enable_bulk(&instance->ref_clk);
+	ret = clk_enable(&instance->ref_clk);
 	if (ret < 0) {
 		dev_err(tphy->dev, "failed to enable ref_clk\n");
 		return ret;
