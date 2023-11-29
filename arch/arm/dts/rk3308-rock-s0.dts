@@ -12,8 +12,8 @@
 #include "rk3308.dtsi"
 
 / {
-	model = "Radxa S0";
-	compatible = "radxa,s0", "rockchip,rk3308";
+	model = "Radxa ROCK S0";
+	compatible = "radxa,rock-s0", "rockchip,rk3308";
 
 	aliases {
 		ethernet0 = &mac;
