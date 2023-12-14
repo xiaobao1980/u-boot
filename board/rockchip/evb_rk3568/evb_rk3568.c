@@ -22,6 +22,7 @@ struct variant_def {
 	char *fdtfile;
 };
 
+#ifdef CONFIG_ID_EEPROM
 static struct variant_def variants[] = {
 	{"radxa,zero3",   230, 270, 0, -1, "rockchip/rk3566-radxa-zero-3w-aic8800ds2.dtb"},
 	{"radxa,zero3",   400, 450, 0, -1, "rockchip/rk3566-radxa-zero-3e.dtb"},
@@ -29,7 +30,7 @@ static struct variant_def variants[] = {
 	{"radxa,rock-3c", 300, 360, 0, -1, "rockchip/rk3566-rock-3c-aic8800ds2.dtb"},
 };
 
-void set_fdtfile(void)
+static void set_fdtfile(void)
 {
 	int i, ret;
 	unsigned int hw_id, bom_id;
@@ -83,3 +84,4 @@ int do_mac(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 	printf("This device does not support user programmable EEPROM.\n");
 	return -1;
 }
+#endif
