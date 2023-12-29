@@ -53,7 +53,7 @@ static void set_fdtfile(void)
 		    hw_id >= v->hw_id_lower_bound &&
 		    hw_id <= v->hw_id_upper_bound &&
 		    bom_id >= v->bom_id_lower_bound &&
-		    bom_id >= v->bom_id_lower_bound) {
+		    bom_id <= v->bom_id_upper_bound) {
 			printf("Override default fdtfile to %s\n", v->fdtfile);
 			env_set("fdtfile", v->fdtfile);
 			break;
