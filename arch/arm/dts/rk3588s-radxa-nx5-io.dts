@@ -34,4 +34,70 @@
 		regulator-max-microvolt = <5000000>;
 		vin-supply = <&vcc12v_dcin>;
 	};
+
+	vcc5v0_host: vcc5v0-host-regulator {
+		u-boot,dm-pre-reloc;
+		compatible = "regulator-fixed";
+		regulator-name = "vcc5v0_host";
+		regulator-boot-on;
+		regulator-always-on;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		enable-active-high;
+		gpio = <&gpio4 RK_PA7 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&vcc5v0_host_en>;
+		vin-supply = <&vcc5v0_sys>;
+	};
+};
+
+&usb2phy2_grf {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&u2phy2 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&u2phy2_host {
+	u-boot,dm-pre-reloc;
+	phy-supply = <&vcc5v0_host>;
+	status = "okay";
+};
+
+&combphy2_psu {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usb_host0_ehci {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usb_host0_ohci {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usbhost3_0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usbhost_dwc3_0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&pinctrl {
+	usb {
+		u-boot,dm-pre-reloc;
+		vcc5v0_host_en: vcc5v0_host_en {
+			u-boot,dm-pre-reloc;
+			rockchip,pins = <4 RK_PA7 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
 };
