@@ -713,8 +713,9 @@ static int do_fdt(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 		else
 			return CMD_RET_FAILURE;
 #endif
+	}
 #if defined(CONFIG_FIT_SIGNATURE)
-	} else if (strncmp(argv[1], "authndtb", 8) == 0) {
+	else if (strncmp(argv[1], "authndtb", 8) == 0) {
 		int ret, num;
 		unsigned long addr;
 		const char *uname;
@@ -757,11 +758,10 @@ static int do_fdt(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 		}
 
 		return CMD_RET_FAILURE;
-	}
 #endif
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
 	/* apply an overlay */
-	else if (strncmp(argv[1], "ap", 2) == 0) {
+	} else if (strncmp(argv[1], "ap", 2) == 0) {
 		unsigned long addr;
 		struct fdt_header *blob;
 		int ret;
