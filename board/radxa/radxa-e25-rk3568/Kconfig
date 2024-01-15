@@ -1,0 +1,15 @@
+if TARGET_RADXA_E25_RK3568
+
+config SYS_BOARD
+	default "radxa-e25-rk3568"
+
+config SYS_VENDOR
+	default "radxa"
+
+config SYS_CONFIG_NAME
+	default "radxa-e25-rk3568"
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+
+endif

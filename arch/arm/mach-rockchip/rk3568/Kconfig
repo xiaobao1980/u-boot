@@ -33,6 +33,11 @@ config TARGET_QUARTZ64_RK3566
 	help
 	  Pine64 Quartz64 single board computer with a RK3566 SoC.
 
+config TARGET_RADXA_E25_RK3568
+	bool "Radxa E25"
+	help
+	  Radxa E25 Carrier Board with a RK3568 SoC.
+
 endchoice
 
 config ROCKCHIP_BOOT_MODE_REG
@@ -52,5 +57,6 @@ source "board/anbernic/rgxx3_rk3566/Kconfig"
 source "board/hardkernel/odroid_m1/Kconfig"
 source "board/pine64/pinenote-rk3566/Kconfig"
 source "board/pine64/quartz64_rk3566/Kconfig"
+source "board/radxa/radxa-e25-rk3568/Kconfig"
 
 endif
