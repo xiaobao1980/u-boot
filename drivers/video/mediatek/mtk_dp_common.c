@@ -374,7 +374,7 @@ static void mtk_dptx_train_update_swing_pre(struct mtk_dp *mtk_dp, int lanes,
 
 static int mtk_dptx_training_flow(struct mtk_dp *mtk_dp, u8 lane_rate, u8 lane_count)
 {
-	u8 temp_byte;
+	u8 temp_byte = 0x0;
 	u8 link_status[DP_LINK_STATUS_SIZE];
 	u8 target_link_rate = lane_rate;
 	u8 target_lane_count = lane_count;
