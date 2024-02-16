@@ -199,6 +199,7 @@ void mtk_dptx_hal_set_color_format(struct mtk_dp *mtk_dp, u8 color_format)
 		fallthrough;
 	case MTK_DP_COLOR_FORMAT_RGB_444:
 	case MTK_DP_COLOR_FORMAT_YUV_444:
+	default:
 		val = PIXEL_ENCODE_FORMAT_DP_ENC0_P0_RGB;
 		break;
 	}
