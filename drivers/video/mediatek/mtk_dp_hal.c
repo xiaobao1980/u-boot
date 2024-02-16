@@ -232,6 +232,7 @@ void mtk_dptx_hal_set_color_depth(struct mtk_dp *mtk_dp, u8 color_depth)
 		val = VIDEO_COLOR_DEPTH_DP_ENC0_P0_16BIT;
 		break;
 	default:
+		val = VIDEO_COLOR_DEPTH_DP_ENC0_P0_8BIT;
 		break;
 	}
 	mtk_dp_mask(mtk_dp, MTK_DP_ENC0_P0_303C, val,
