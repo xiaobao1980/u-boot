@@ -810,7 +810,6 @@ struct display_mode *mtk_dp_checkedid(void)
 {
 	unsigned short h_active, v_active, h_blanking, v_blanking, hsync, vsync;
 	unsigned short hfp, vfp, hbp, vbp, fps;
-	unsigned int pixel_clock;
 	struct edp_panel_description *edp_panel_desc = NULL;
 	struct display_mode *mode;
 
@@ -841,7 +840,7 @@ struct display_mode *mtk_dp_checkedid(void)
 	vfp |= (unsigned short)(*(edid_data + 0x41) & 0x0C) << 6;
 	hbp = h_blanking - hfp - hsync;
 	vbp = v_blanking - vfp - vsync;
-	fps = pixel_clock * 1000 / (h_active + h_blanking) / (v_active + v_blanking);
+	fps = mode->clock * 1000 / (h_active + h_blanking) / (v_active + v_blanking);
 
 	dptx_printf("pixel_clock   = %d\n", mode->clock);
 	dptx_printf("h_active    = %d\n", h_active);
