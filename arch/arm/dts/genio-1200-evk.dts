@@ -133,13 +133,6 @@
 		bias-pull-up;
 	};
 
-	i2c3_pins: i2c3 {
-		pinmux = <PINMUX_GPIO14__FUNC_SDA3>,
-			 <PINMUX_GPIO15__FUNC_SCL3>;
-		input-enable;
-		bias-pull-up;
-	};
-
 	i2c6_pins: i2c6 {
 		pinmux = <PINMUX_GPIO25__FUNC_SDA6>,
 			 <PINMUX_GPIO26__FUNC_SCL6>;
@@ -328,13 +321,6 @@
 &i2c2 {
 	clock-frequency = <100000>;
 	pinctrl-0 = <&i2c2_pins>;
-	pinctrl-names = "default";
-	status = "okay";
-};
-
-&i2c3 {
-	clock-frequency = <100000>;
-	pinctrl-0 = <&i2c3_pins>;
 	pinctrl-names = "default";
 	status = "okay";
 };
