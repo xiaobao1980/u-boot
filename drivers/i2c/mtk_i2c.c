@@ -200,6 +200,34 @@ static const uint mt_i2c_regs_v2[] = {
 	[REG_DCM_EN] = 0xf88,
 };
 
+static const uint mt_i2c_regs_v3[] = {
+	[REG_PORT] = 0x0,
+	[REG_SLAVE_ADDR] = 0x94,
+	[REG_INTR_MASK] = 0x8,
+	[REG_INTR_STAT] = 0xc,
+	[REG_CONTROL] = 0x10,
+	[REG_TRANSFER_LEN] = 0x14,
+	[REG_TRANSAC_LEN] = 0x18,
+	[REG_DELAY_LEN] = 0x1c,
+	[REG_TIMING] = 0x20,
+	[REG_START] = 0x24,
+	[REG_EXT_CONF] = 0x28,
+	[REG_LTIMING] = 0x2c,
+	[REG_HS] = 0x30,
+	[REG_IO_CONFIG] = 0x34,
+	[REG_FIFO_ADDR_CLR] = 0x38,
+	[REG_SDA_TIMING] = 0x3c,
+	[REG_TRANSFER_LEN_AUX] = 0x44,
+	[REG_CLOCK_DIV] = 0x48,
+	[REG_SOFTRESET] = 0x50,
+	[REG_SCL_MIS_COMP_POINT] = 0x90,
+	[REG_DEBUGSTAT] = 0xe4,
+	[REG_DEBUGCTRL] = 0xe8,
+	[REG_FIFO_STAT] = 0xf4,
+	[REG_FIFO_THRESH] = 0xf8,
+	[REG_DCM_EN] = 0xf88,
+};
+
 /**
  * struct i2c_timings - I2C timing information
  * @bus_freq_hz: the bus frequency in Hz
@@ -1111,6 +1139,15 @@ static const struct mtk_i2c_soc_data mt8365_soc_data = {
 	.max_dma_support = 33,
 };
 
+static const struct mtk_i2c_soc_data mt8188_soc_data = {
+	.regs = mt_i2c_regs_v3,
+	.dma_sync = 0,
+	.timing_adjust = 1,
+	.ltiming_adjust = 1,
+	.apdma_sync = 1,
+	.max_dma_support = 36,
+};
+
 static const struct mtk_i2c_soc_data mt8195_soc_data = {
 	.regs = mt_i2c_regs_v2,
 	.dma_sync = 1,
@@ -1164,6 +1201,9 @@ static const struct udevice_id mtk_i2c_ids[] = {
 		.compatible = "mediatek,mt8183-i2c",
 		.data = (ulong)&mt8183_soc_data,
 	}, {
+		.compatible = "mediatek,mt8188-i2c",
+		.data = (ulong)&mt8188_soc_data,
+	},{
 		.compatible = "mediatek,mt8195-i2c",
 		.data = (ulong)&mt8195_soc_data,
 	}, {
