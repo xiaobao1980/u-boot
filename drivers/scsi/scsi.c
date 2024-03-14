@@ -110,7 +110,7 @@ static void scsi_setup_read_ext(struct scsi_cmd *pccb, lbaint_t start,
 {
 	pccb->cmd[0] = SCSI_READ10;
 	pccb->cmd[1] = 0;
-#ifdef CONFIG_EFI_VARIABLE_FILE_STORE
+#ifdef CONFIG_EFI_LOADER
 	pccb->cmd[1] = (1 << 3);  /* flags, FUA = 1 */
 #endif
 	pccb->cmd[2] = (unsigned char)(start >> 24) & 0xff;
@@ -134,7 +134,7 @@ static void scsi_setup_write_ext(struct scsi_cmd *pccb, lbaint_t start,
 {
 	pccb->cmd[0] = SCSI_WRITE10;
 	pccb->cmd[1] = 0;
-#ifdef CONFIG_EFI_VARIABLE_FILE_STORE
+#ifdef CONFIG_EFI_LOADER
 	pccb->cmd[1] = (1 << 3);  /* flags, FUA = 1 */
 #endif
 	pccb->cmd[2] = (unsigned char)(start >> 24) & 0xff;
