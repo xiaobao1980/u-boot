@@ -140,9 +140,6 @@ int board_init(void)
 	if (CONFIG_IS_ENABLED(USB_ETHER))
 		usb_ether_init();
 
-	printf("Disabling WDT\n");
-	writel(0, 0x10007000);
-
 	printf("Enabling SCP SRAM\n");
 	for (unsigned int val = 0xFFFFFFFF; val != 0U;) {
 		val = val >> 1;
