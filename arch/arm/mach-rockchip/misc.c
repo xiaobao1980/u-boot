@@ -23,6 +23,11 @@
 
 int rockchip_setup_macaddr(void)
 {
+#ifdef CONFIG_RADXA_ID_EEPROM
+	if(!mac_read_from_eeprom())
+		return 0;
+#endif
+
 #if CONFIG_IS_ENABLED(HASH) && CONFIG_IS_ENABLED(SHA256)
 	int ret;
 	const char *cpuid = env_get("cpuid#");
