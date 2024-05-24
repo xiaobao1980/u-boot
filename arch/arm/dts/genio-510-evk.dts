@@ -84,6 +84,43 @@
 		regulator-always-on;
 	};
 
+	usbp0_vbus3v3: usbp0-vbus3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "usbp0-vbus3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio 84 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	usbp1_vbus3v3: usbp1-vbus3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "usbp1-vbus3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio 87 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	usbhub_3v3: usbhub-3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "usbhub-3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio 112 GPIO_ACTIVE_HIGH>;
+		startup-delay-us = <10000>;
+		enable-active-high;
+	};
+
+	usbhub_reset: usbhub-reset {
+		compatible = "regulator-fixed";
+		regulator-name = "usbhub-reset";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		gpio = <&gpio 7 GPIO_ACTIVE_HIGH>;
+		enable-active-low;
+	};
+
 	dsi0: dsi0{
 		compatible = "mediatek,mt8188-dsi";
 		reg = <0 0x60000000 0 0x02000000>;
@@ -235,6 +272,13 @@
 			bias-pull-up;
 		};
 	};
+
+	usb1_default: usbp1default {
+		vbus-pins {
+			pinmux = <PINMUX_GPIO87__FUNC_O_USB_DRVVBUS_1P>;
+			output-high;
+		};
+	};
 };
 
 &i2c0 {
@@ -283,5 +327,53 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c6_pin>;
 	clock-frequency = <400000>;
+	status = "okay";
+};
+
+&u3phy0 {
+	status = "okay";
+};
+
+&u3phy1 {
+	status = "okay";
+};
+
+&u3phy2 {
+	status = "okay";
+};
+
+&u2port0 {
+	status = "okay";
+};
+
+&u2port1 {
+	status = "okay";
+};
+
+&u3port1 {
+	status = "okay";
+};
+
+&u2port2 {
+	status = "okay";
+};
+
+&usb {
+	vbus-supply = <&usbp0_vbus3v3>;
+	status = "okay";
+};
+
+&ssusb {
+	mediatek,force-vbus;
+	maximum-speed = "high-speed";
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&xhci1 {
+	pinctrl-0 = <&usb1_default>;
+	pinctrl-names = "default";
+	vusb33-supply = <&usbhub_3v3>;
+	vbus-supply = <&usbhub_reset>;
 	status = "okay";
 };
