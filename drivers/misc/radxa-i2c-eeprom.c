@@ -457,8 +457,9 @@ int mac_read_from_eeprom(void)
 	 * always return SUCCESS, even some error happens.
 	 */
 	// setup ethaddr env
-	read_eeprom(eeprom_buff); 
-	if (!set_mac_address_env(einfo_page2.mac_addr)) 
+	if(read_eeprom(eeprom_buff))
+		return -1;
+	if (set_mac_address_env(einfo_page2.mac_addr))
 		return -1;
 
 	return 0;
