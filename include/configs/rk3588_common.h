@@ -82,6 +82,7 @@
 
 #include <config_distro_bootcmd.h>
 
+#ifndef CONFIG_DEFAULT_FDT_FILE
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	BOOTENV_SHARED_MTD	\
 	ENV_MEM_LAYOUT_SETTINGS \
@@ -90,6 +91,18 @@
 	ROCKCHIP_DEVICE_SETTINGS \
 	RKIMG_DET_BOOTDEV \
 	BOOTENV
+#else
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	BOOTENV_SHARED_MTD	\
+	ENV_MEM_LAYOUT_SETTINGS \
+	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"partitions=" PARTS_RKIMG \
+	ROCKCHIP_DEVICE_SETTINGS \
+	RKIMG_DET_BOOTDEV \
+	BOOTENV
+#endif
+
+
 #endif
 
 /* rockchip ohci host driver */
